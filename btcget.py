@@ -33,15 +33,17 @@ import requests
 from requests.exceptions import ConnectionError, Timeout, TooManyRedirects
 
 
-class BtcApi(ABC):
+# ============= API Backends =============
+
+class _BtcApi(ABC):
 
     @abstractmethod
     def get_btc_price(self):
         pass
 
 
-class CoinMarketApi(BtcApi):
-    def __init__(self, api_key, currency="USD"):
+class CoinMarketApi(_BtcApi):
+    def __init__(self, api_key: str, currency: str = "USD"):
         self.api_key = api_key
         self.api_endpoint = "/v1/cryptocurrency/listings/latest"
         self.api_url = "https://pro-api.coinmarketcap.com" + self.api_endpoint
@@ -72,58 +74,102 @@ class CoinMarketApi(BtcApi):
             print(e)
 
 
-API_BACKENDS = {
-    "coinmarket": CoinMarketApi
-}
-
-class ApiBackendFactoryError:
+class ApiBackendFactoryError(Exception):
     pass
+
 
 class ApiBackendFactory:
     @staticmethod
-    def create_backend(backend, api_key, currency="USD"):
-        if backend in API_BACKENDS:
-            return API_BACKENDS[backend](api_key, currency)
+    def create_backend(backend, api_key: str, currency: str = "USD"):
+        if backend == "coinmarket":
+            return CoinMarketApi(api_key, currency)
         else:
-            raise ApiBackendFactory("Unsupported API backend:", backend)
+            raise ApiBackendFactoryError("Unsupported API backend:", backend)
 
 
-def load_config(config_path):
-    with open(config_path, "r") as config_file:
-        return yaml.safe_load(config_file)
-    
-def save_config(config_path, api_backend, api_key, currency):
-    with open(config_path, "w") as config_file:
-        config_file.write(
-            yaml.safe_dump({
-            "api_backend": api_backend,
-            "api_key": api_key,
-            "currency": currency
-        }))
+# ============= Config Loading =============
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-r", "--reconfig", action="store_true", help="Re-configure api key and backend")
-    args = parser.parse_args()
+_config_path = Path.joinpath(Path.home(), ".btcget")
+_default_backend = "coinmarket"
+_default_currency = "USD"
 
-    config_path = Path.joinpath(Path.home(), ".btcget")
+
+class ApiConfigNotFound(Exception):
+    pass
+
+def load_config(config_path: Path = _config_path):
     if config_path.is_file():
-        config = load_config(config_path)
-        api_backend = config["api_backend"]
-        api_key = config["api_key"]
-        currency = config["currency"]
+        with open(config_path, "r") as config_file:
+            return yaml.safe_load(config_file)
     else:
-        try:
-            api_backend = input("Enter API backend[coinmarket]: ")
-            api_key = input("Enter API key: ")
-            currency = input("Enter currency[USD]:")
-        except KeyboardInterrupt:
-            sys.exit(0)
-        
-        save_config(config_path, api_backend, api_key)
+        raise ApiConfigNotFound("Config not found")
 
-    api_backend = ApiBackendFactory.create_backend(api_backend, api_key, currency)
-    sys.stdout.write("{:,}\n".format(api_backend.get_btc_price()))
+
+def _set_config(args):
+    config = load_config(_config_path)
+    if args.backend:
+        config["backend"] = args.backend
+    if args.key:
+        config["key"] = args.key
+    if args.currency:
+        config["currency"] = args.currency
+    _save_config(config)
+
+def _save_config(config, config_path: Path = _config_path):
+    with open(str(config_path), "w") as config_file:
+        config_file.write(
+            yaml.safe_dump(config)
+        )
+    sys.exit(0)
+
+def _init_config(args):
+
+    with open(str(_config_path), "w") as config_file:
+        config_file.write(
+            yaml.safe_dump(
+                {
+                    "backend": _default_backend,
+                    "currency": _default_currency,
+                    "key": ""
+                }
+            )
+        )
+
+    print("\nConfig initialized at {} with default backend/currency.".format(_config_path))
+    print("\nAdd your API key with the command:\n")
+    print("\tbtcget config --key <api key>\n")
+    sys.exit(0)
+
+
+def _main():
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(title="subcommands", description="valid subcommands")
+
+    config_parser = subparsers.add_parser("config")
+    config_parser.add_argument("--backend", type=str, help="API backend")
+    config_parser.add_argument("--key", type=str, help="API key")
+    config_parser.add_argument("--currency", type=str, help="Conversion currency")
+    config_parser.set_defaults(func=_set_config)
+
+    init_parser = subparsers.add_parser("init")
+    init_parser.add_argument("config", action="store_true", help="Create config with defaults")
+    init_parser.set_defaults(func=_init_config)
+
+    args = parser.parse_args()
+    try:
+        args.func(args)
+    except AttributeError:
+        pass
+
+    config = load_config(_config_path)
+    try:
+        api_backend = ApiBackendFactory.create_backend(config["backend"],
+                                                       config["key"],
+                                                       config["currency"])
+    except ApiConfigNotFound as e:
+        sys.exit(1)
+
+    print("{:,}".format(api_backend.get_btc_price()))
 
 if __name__ == "__main__":
-    main()
+    _main()
