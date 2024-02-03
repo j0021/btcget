@@ -2,3 +2,6 @@ venv
 *.yaml
 *.json
 .DS_Store
+build
+dist
+*egg*
