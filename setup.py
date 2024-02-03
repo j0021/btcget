@@ -1,8 +1,9 @@
 from setuptools import setup
+from btcget import __version__
 
 setup(
     name="btcget",
-    version="0.0.1",
+    version=__version__,
     py_modules=["btcget"],
     install_requires=[
         "PyYAML==6.0.1",

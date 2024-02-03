@@ -23,6 +23,7 @@
 
 # For more information, please refer to <https://unlicense.org>
 
+__version__ = "0.0.1"
 
 import argparse
 import yaml
@@ -142,9 +143,9 @@ def _init_config(args):
 
 
 def _main():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(prog="btcget")
+    parser.add_argument("-v", "--version", action="version", version="%(prog)s {}".format(__version__))
     subparsers = parser.add_subparsers(title="subcommands", description="valid subcommands")
-
     config_parser = subparsers.add_parser("config")
     config_parser.add_argument("--backend", type=str, help="API backend")
     config_parser.add_argument("--key", type=str, help="API key")
