@@ -95,7 +95,7 @@ _default_backend = "coinmarket"
 _default_currency = "USD"
 
 
-class ApiConfigNotFound(Exception):
+class ConfigNotFound(Exception):
     pass
 
 def load_config(config_path: Path = _config_path):
@@ -103,7 +103,7 @@ def load_config(config_path: Path = _config_path):
         with open(config_path, "r") as config_file:
             return yaml.safe_load(config_file)
     else:
-        raise ApiConfigNotFound("Config not found")
+        raise ConfigNotFound("Config not found")
 
 
 def _set_config(args):
@@ -167,7 +167,7 @@ def _main():
         api_backend = ApiBackendFactory.create_backend(config["backend"],
                                                        config["key"],
                                                        config["currency"])
-    except ApiConfigNotFound as e:
+    except ConfigNotFound as e:
         sys.exit(1)
 
     print("{:,}".format(api_backend.get_btc_price()))
