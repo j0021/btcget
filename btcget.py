@@ -23,7 +23,7 @@
 
 # For more information, please refer to <https://unlicense.org>
 
-__version__ = "0.0.1"
+__version__ = "0.0.2"
 
 import argparse
 import yaml
