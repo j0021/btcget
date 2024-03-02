@@ -2,24 +2,11 @@
 
 REST API wrapper for fetching Bitcoin market price data via multiple backends.
 
-## Installation (from source)
+## Installation
 
-1. Clone the repo
 ```
-git clone https://github.com/j0021/btcget.git
+pip install btcget
 ```
-2. Change directory
-```
-cd btcget
-```
-3. Run the setup script
-``` 
-python setup.py install
-```
-
-## Installation (from pip)
-
-TBA
 
 ## Supported API Backends
 

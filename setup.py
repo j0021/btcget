@@ -5,7 +5,7 @@ with open("README.md") as f:
 
 setup(
     name="btcget",
-    version="0.0.2",
+    version="0.0.3",
     description="Simple REST API wrapper for fetching Bitcoin market price data via multiple backends.",
     long_description=doc,
     long_description_content_type="text/markdown",
