@@ -1,6 +1,6 @@
 # btcget
 
-REST API wrapper for fetching Bitcoin market price data via multiple backends.
+Simple REST API wrapper for fetching Bitcoin market price data via multiple backends.
 
 ## Installation
 
