@@ -32,7 +32,7 @@ from abc import ABC, abstractmethod
 import requests
 from requests.exceptions import ConnectionError, Timeout, TooManyRedirects
 
-__version__ = "0.0.3"
+__version__ = "0.0.4"
 
 # ============= API Backends =============
 
