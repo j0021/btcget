@@ -46,6 +46,7 @@ class _BtcApi(ABC):
 class CoinMarketApi(_BtcApi):
     def __init__(self, api_key: str, currency: str = "USD"):
         self.api_key = api_key
+        self.currency = currency
         self.api_endpoint = "/v1/cryptocurrency/listings/latest"
         self.api_url = "https://pro-api.coinmarketcap.com" + self.api_endpoint
         self.api_header = "X-CMC_PRO_API_KEY"
@@ -57,7 +58,7 @@ class CoinMarketApi(_BtcApi):
         self.api_parameters = {
             "start": "1",
             "limit": "1",
-            "convert": currency
+            "convert": self.currency
         }
 
 
@@ -69,7 +70,7 @@ class CoinMarketApi(_BtcApi):
             
             # data = json.loads(response.text)
             data = response.json()
-            btc_price = data["data"][0]["quote"]["USD"]["price"]
+            btc_price = data["data"][0]["quote"][self.currency]["price"]
             return round(btc_price, 2)
         except (ConnectionError, Timeout, TooManyRedirects) as e:
             print(e)
