@@ -32,7 +32,7 @@ from abc import ABC, abstractmethod
 import requests
 from requests.exceptions import ConnectionError, Timeout, TooManyRedirects
 
-__version__ = "0.0.4"
+progver="0.0.4"
 
 # ============= API Backends =============
 
@@ -145,7 +145,7 @@ def _init_config(args):
 
 def _main():
     parser = argparse.ArgumentParser(prog="btcget")
-    parser.add_argument("-v", "--version", action="version", version="%(prog)s {}".format(__version__))
+    parser.add_argument("-v", "--version", action="version", version="%(prog)s {}".format(progver))
     subparsers = parser.add_subparsers(title="subcommands", description="valid subcommands")
     config_parser = subparsers.add_parser("config")
     config_parser.add_argument("--backend", type=str, help="API backend")

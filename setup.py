@@ -1,11 +1,13 @@
 from setuptools import setup
 
+progver="0.0.4"
+
 with open("README.md") as f:
     doc = f.read()
 
 setup(
     name="btcget",
-    version="0.0.4",
+    version=progver,
     description="Simple REST API wrapper for fetching Bitcoin market price data via multiple backends.",
     long_description=doc,
     long_description_content_type="text/markdown",
