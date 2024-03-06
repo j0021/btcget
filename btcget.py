@@ -36,12 +36,31 @@ progver="0.0.4"
 
 # ============= API Backends =============
 
+
+class BtcApiFetchError(Exception):
+    pass
+
 class _BtcApi(ABC):
 
     @abstractmethod
     def get_btc_price(self):
         pass
 
+    def fetch(self, api_url, api_headers, api_parameters):
+        try:
+            response = requests.get(api_url,
+                                    headers=api_headers,
+                                    params=api_parameters)
+        except (ConnectionError, Timeout, TooManyRedirects) as e:
+            raise BtcApiFetchError("Unable to connect to API URL") from None
+
+        if response.status_code == 200:
+            return response
+        else:
+            raise BtcApiFetchError("HTTP response was not 200 OK, got status: {}".format(response.status_code))
+
+class CoinMarketApiError(Exception):
+    pass
 
 class CoinMarketApi(_BtcApi):
     def __init__(self, api_key: str, currency: str = "USD"):
@@ -50,7 +69,7 @@ class CoinMarketApi(_BtcApi):
         self.api_endpoint = "/v1/cryptocurrency/listings/latest"
         self.api_url = "https://pro-api.coinmarketcap.com" + self.api_endpoint
         self.api_header = "X-CMC_PRO_API_KEY"
-        self.headers = {
+        self.api_headers = {
             "Accepts": "application/json",
             self.api_header: api_key,
         }
@@ -63,17 +82,17 @@ class CoinMarketApi(_BtcApi):
 
 
     def get_btc_price(self):
+        response = self.fetch(self.api_url,
+                                self.api_headers,
+                                self.api_parameters)
+
+        data = response.json()
         try:
-            response = requests.get(self.api_url, 
-                                    headers=self.headers, 
-                                    params=self.api_parameters)
-            
-            # data = json.loads(response.text)
-            data = response.json()
             btc_price = data["data"][0]["quote"][self.currency]["price"]
-            return round(btc_price, 2)
-        except (ConnectionError, Timeout, TooManyRedirects) as e:
-            print(e)
+        except KeyError:
+            raise CoinMarketApiError("Unable to parse price data from") from None
+
+        return round(btc_price, 2)
 
 
 class ApiBackendFactoryError(Exception):
