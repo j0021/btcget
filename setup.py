@@ -1,6 +1,6 @@
 from setuptools import setup
 
-progver="0.0.4"
+progver="0.0.5"
 
 with open("README.md") as f:
     doc = f.read()

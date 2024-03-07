@@ -32,7 +32,7 @@ from abc import ABC, abstractmethod
 import requests
 from requests.exceptions import ConnectionError, Timeout, TooManyRedirects
 
-progver="0.0.4"
+progver="0.0.5"
 
 # ============= API Backends =============
 
